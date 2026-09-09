@@ -22,8 +22,8 @@ import com.innergarden.app.ui.components.InnerGardenButton
 @Composable
 fun SplashScreen(viewModel: SplashViewModel, onFinished: () -> Unit) {
     val state = viewModel.uiState.collectAsStateWithLifecycle().value
-    LaunchedEffect(state.isAuthenticated) {
-        if (state.isAuthenticated) onFinished()
+    LaunchedEffect(state.canNavigate) {
+        if (state.canNavigate) onFinished()
     }
     Column(
         Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primaryContainer),

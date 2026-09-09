@@ -6,6 +6,7 @@ import java.time.Clock
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.UUID
+import kotlinx.coroutines.CancellationException
 
 class SaveDailyCheckInUseCase(
     private val repository: CheckInRepository,
@@ -26,9 +27,13 @@ class SaveDailyCheckInUseCase(
             sleep = sleep,
             reflection = reflection?.trim()?.takeIf { it.isNotEmpty() }
         )
-        return runCatching {
+        return try {
             repository.save(checkIn.toEntity(zoneId))
-            checkIn
+            Result.success(checkIn)
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Exception) {
+            Result.failure(error)
         }
     }
 }

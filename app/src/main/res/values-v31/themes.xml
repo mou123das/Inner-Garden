@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.InnerGarden" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowSplashScreenBackground">@color/garden_pale_mint</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_splash_sprout</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/garden_pale_mint</item>
+    </style>
+</resources>

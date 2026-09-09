@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 data class CheckInUiState(
     val mood: Int = 3,
@@ -35,6 +36,7 @@ sealed interface CheckInUiEvent {
 
 class CheckInStateHolder(
     private val saveDailyCheckIn: SaveDailyCheckInUseCase,
+    private val saveTimeoutMillis: Long = 12_000L,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 ) {
     private val _state = MutableStateFlow(CheckInUiState())
@@ -62,10 +64,21 @@ class CheckInStateHolder(
         if (current.isSaving || current.saveCompleted) return
         _state.update { it.copy(isSaving = true, errorMessage = null) }
         scope.launch {
-            val result = saveDailyCheckIn(current.mood, current.stress, current.energy, current.sleep, current.reflection)
-            _state.update {
-                if (result.isSuccess) it.copy(isSaving = false, saveCompleted = true)
-                else it.copy(isSaving = false, errorMessage = "We couldn't save your check-in. Please try again.")
+            try {
+                val result = withTimeoutOrNull(saveTimeoutMillis) {
+                    saveDailyCheckIn(current.mood, current.stress, current.energy, current.sleep, current.reflection)
+                }
+                _state.update {
+                    when {
+                        result == null -> it.copy(
+                            errorMessage = "We couldn't confirm your check-in yet. Check your connection and try again."
+                        )
+                        result.isSuccess -> it.copy(saveCompleted = true)
+                        else -> it.copy(errorMessage = "We couldn't save your check-in. Please try again.")
+                    }
+                }
+            } finally {
+                _state.update { it.copy(isSaving = false) }
             }
         }
     }

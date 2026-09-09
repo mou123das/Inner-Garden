@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 data class SplashUiState(
@@ -17,16 +18,26 @@ data class SplashUiState(
     val subtitle: String = "Grow gently, one day at a time",
     val isAuthenticating: Boolean = false,
     val isAuthenticated: Boolean = false,
+    val minimumDurationElapsed: Boolean = false,
     val errorMessage: String? = null
-)
+) {
+    val canNavigate: Boolean get() = isAuthenticated && minimumDurationElapsed
+}
 sealed interface SplashUiEvent { data object Retry : SplashUiEvent }
 class SplashStateHolder(
     private val ensureAuthenticated: EnsureAuthenticatedUseCase,
+    private val minimumDurationMillis: Long = 1_500L,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 ) {
     private val _state = MutableStateFlow(SplashUiState())
     val state: StateFlow<SplashUiState> = _state.asStateFlow()
-    init { authenticate() }
+    init {
+        scope.launch {
+            delay(minimumDurationMillis)
+            _state.update { it.copy(minimumDurationElapsed = true) }
+        }
+        authenticate()
+    }
     fun onEvent(event: SplashUiEvent) {
         if (event == SplashUiEvent.Retry) authenticate()
     }
