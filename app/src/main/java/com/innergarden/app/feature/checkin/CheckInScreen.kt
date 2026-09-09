@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -24,6 +25,12 @@ import com.innergarden.app.ui.components.RatingSelector
 @Composable
 fun CheckInScreen(viewModel: CheckInViewModel, onBack: () -> Unit, onSaved: () -> Unit) {
     val state = viewModel.uiState.collectAsStateWithLifecycle().value
+    LaunchedEffect(state.saveCompleted) {
+        if (state.saveCompleted) {
+            viewModel.onEvent(CheckInUiEvent.SaveHandled)
+            onSaved()
+        }
+    }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         BackHeader("Daily Check-In", "Take a minute to notice how you're feeling.", onBack)
         RatingCard("Mood", state.mood, listOf("○", "◔", "◑", "◕", "●")) { viewModel.onEvent(CheckInUiEvent.MoodChanged(it)) }
@@ -41,7 +48,10 @@ fun CheckInScreen(viewModel: CheckInViewModel, onBack: () -> Unit, onSaved: () -
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp)
             )
         }
-        InnerGardenButton("Save today's check-in") { viewModel.onEvent(CheckInUiEvent.Save); onSaved() }
+        state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
+        InnerGardenButton(if (state.isSaving) "Saving..." else "Save today's check-in", enabled = !state.isSaving) {
+            viewModel.onEvent(CheckInUiEvent.Save)
+        }
         Spacer(Modifier.height(8.dp))
     }
 }

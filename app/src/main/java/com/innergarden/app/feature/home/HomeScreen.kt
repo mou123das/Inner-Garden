@@ -34,11 +34,12 @@ fun HomeScreen(viewModel: HomeViewModel, onCheckIn: () -> Unit, onReflection: ()
         GardenCard(Modifier.fillMaxWidth(), MaterialTheme.colorScheme.primaryContainer) {
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                 TreeVisual(); Text(state.gardenStage, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold); Text(state.streak, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                state.wellbeingScore?.let { Text("Recent wellbeing indicator: " + it + " / 100", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
             }
         }
         GardenCard(Modifier.fillMaxWidth()) {
             SectionHeader("Daily Check-In", "Take a moment for yourself"); Spacer(Modifier.height(16.dp))
-            InnerGardenButton("Check in with yourself") { viewModel.onEvent(HomeUiEvent.CheckIn); onCheckIn() }
+            InnerGardenButton(if (state.hasCheckedInToday) "Add another check-in" else "Check in with yourself") { viewModel.onEvent(HomeUiEvent.CheckIn); onCheckIn() }
         }
         GardenCard(Modifier.fillMaxWidth()) {
             SectionHeader("Today's Reflection"); Spacer(Modifier.height(8.dp)); Text(state.reflection); Spacer(Modifier.height(10.dp))
@@ -46,7 +47,7 @@ fun HomeScreen(viewModel: HomeViewModel, onCheckIn: () -> Unit, onReflection: ()
         }
         SectionHeader("This Week")
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            GardenCard(Modifier.weight(1f), MaterialTheme.colorScheme.surfaceVariant) { Text("Insights", fontWeight = FontWeight.Bold); Spacer(Modifier.height(6.dp)); Text("A steady week", style = MaterialTheme.typography.bodySmall) }
+            GardenCard(Modifier.weight(1f), MaterialTheme.colorScheme.surfaceVariant) { Text("Insights", fontWeight = FontWeight.Bold); Spacer(Modifier.height(6.dp)); Text(state.recentSummary, style = MaterialTheme.typography.bodySmall) }
             GardenCard(Modifier.weight(1f), MaterialTheme.colorScheme.surfaceVariant) { Text("Mind Declutter", fontWeight = FontWeight.Bold); Spacer(Modifier.height(6.dp)); Text("3 themes noticed", style = MaterialTheme.typography.bodySmall) }
         }
         Spacer(Modifier.height(8.dp))

@@ -1,17 +1,57 @@
 package com.innergarden.app.feature.insights
 
 import androidx.lifecycle.ViewModel
+import com.innergarden.app.domain.model.DailyCheckIn
+import com.innergarden.app.domain.usecase.CalculateTrendUseCase
+import com.innergarden.app.domain.usecase.GetRecentCheckInsUseCase
+import java.util.Locale
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 data class InsightMetric(val label: String, val value: String, val points: List<Float>)
-data class InsightsUiState(val metrics: List<InsightMetric> = listOf(
-    InsightMetric("Mood", "4.1 / 5", listOf(.55f,.65f,.60f,.78f,.72f,.84f,.82f)),
-    InsightMetric("Energy", "3.7 / 5", listOf(.50f,.62f,.58f,.66f,.70f,.68f,.74f)),
-    InsightMetric("Stress", "2.8 / 5", listOf(.72f,.62f,.67f,.55f,.58f,.50f,.48f)),
-    InsightMetric("Sleep", "4.0 / 5", listOf(.64f,.74f,.70f,.80f,.76f,.82f,.80f))
-), val observation: String = "Your energy has been fairly consistent this week.")
+data class InsightsUiState(
+    val metrics: List<InsightMetric> = emptyList(),
+    val observation: String = "Complete a check-in to begin seeing your recent patterns.",
+    val isEmpty: Boolean = true
+)
 sealed interface InsightsUiEvent { data object Viewed : InsightsUiEvent }
-class InsightsStateHolder { private val _state = MutableStateFlow(InsightsUiState()); val state: StateFlow<InsightsUiState> = _state.asStateFlow(); fun onEvent(event: InsightsUiEvent) = Unit }
-class InsightsViewModel(private val holder: InsightsStateHolder = InsightsStateHolder()) : ViewModel() { val uiState = holder.state; fun onEvent(event: InsightsUiEvent) = holder.onEvent(event) }
+class InsightsStateHolder(
+    recentCheckIns: GetRecentCheckInsUseCase,
+    private val calculateTrend: CalculateTrendUseCase,
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+) {
+    private val _state = MutableStateFlow(InsightsUiState())
+    val state: StateFlow<InsightsUiState> = _state.asStateFlow()
+    init {
+        scope.launch {
+            recentCheckIns(7).collect { checkIns ->
+                val trend = calculateTrend(checkIns)
+                _state.value = if (trend == null) InsightsUiState() else InsightsUiState(
+                    metrics = listOf(
+                        metric("Mood", trend.moodAverage, checkIns) { it.mood },
+                        metric("Energy", trend.energyAverage, checkIns) { it.energy },
+                        metric("Stress", trend.stressAverage, checkIns) { it.stress },
+                        metric("Sleep", trend.sleepAverage, checkIns) { it.sleep }
+                    ),
+                    observation = "These averages reflect your " + trend.checkInCount + " most recent check-in" + if (trend.checkInCount == 1) "." else "s.",
+                    isEmpty = false
+                )
+            }
+        }
+    }
+    private fun metric(label: String, average: Double, values: List<DailyCheckIn>, selector: (DailyCheckIn) -> Int) =
+        InsightMetric(label, String.format(Locale.US, "%.1f / 5", average), values.asReversed().map { selector(it) / 5f })
+    fun onEvent(event: InsightsUiEvent) = Unit
+    fun close() = scope.cancel()
+}
+class InsightsViewModel(private val holder: InsightsStateHolder) : ViewModel() {
+    val uiState = holder.state
+    fun onEvent(event: InsightsUiEvent) = holder.onEvent(event)
+    override fun onCleared() = holder.close()
+}

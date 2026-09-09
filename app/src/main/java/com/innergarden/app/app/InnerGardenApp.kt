@@ -13,14 +13,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.innergarden.app.feature.checkin.CheckInScreen
+import com.innergarden.app.feature.checkin.CheckInStateHolder
 import com.innergarden.app.feature.checkin.CheckInViewModel
 import com.innergarden.app.feature.declutter.DeclutterScreen
 import com.innergarden.app.feature.declutter.DeclutterViewModel
 import com.innergarden.app.feature.home.HomeScreen
+import com.innergarden.app.feature.home.HomeStateHolder
 import com.innergarden.app.feature.home.HomeViewModel
 import com.innergarden.app.feature.insights.InsightsScreen
+import com.innergarden.app.feature.insights.InsightsStateHolder
 import com.innergarden.app.feature.insights.InsightsViewModel
 import com.innergarden.app.feature.reflection.ReflectionScreen
+import com.innergarden.app.feature.reflection.ReflectionStateHolder
 import com.innergarden.app.feature.reflection.ReflectionViewModel
 import com.innergarden.app.feature.settings.SettingsScreen
 import com.innergarden.app.feature.settings.SettingsViewModel
@@ -61,26 +65,38 @@ fun InnerGardenApp() {
             }
             composable(InnerGardenDestination.Home.route) {
                 HomeScreen(
-                    viewModel<HomeViewModel>(),
+                    viewModel<HomeViewModel> {
+                        HomeViewModel(HomeStateHolder(AppContainer.getRecentCheckIns, AppContainer.calculateGardenGrowth, AppContainer.calculateWellbeingScore))
+                    },
                     onCheckIn = { navController.navigate(InnerGardenDestination.CheckIn.route) },
                     onReflection = { navController.navigate(InnerGardenDestination.Reflection.route) },
                     onSettings = { navController.navigate(InnerGardenDestination.Settings.route) }
                 )
             }
             composable(InnerGardenDestination.CheckIn.route) {
-                CheckInScreen(viewModel<CheckInViewModel>(), navController::popBackStack) {
+                CheckInScreen(
+                    viewModel<CheckInViewModel> { CheckInViewModel(CheckInStateHolder(AppContainer.saveDailyCheckIn)) },
+                    navController::popBackStack
+                ) {
                     navController.navigate(InnerGardenDestination.Reflection.route)
                 }
             }
             composable(InnerGardenDestination.Reflection.route) {
-                ReflectionScreen(viewModel<ReflectionViewModel>(), navController::popBackStack) {
+                ReflectionScreen(
+                    viewModel<ReflectionViewModel> { ReflectionViewModel(ReflectionStateHolder(AppContainer.getPlaceholderReflectionGuidance)) },
+                    navController::popBackStack
+                ) {
                     navController.navigate(InnerGardenDestination.Home.route) {
                         popUpTo(InnerGardenDestination.Home.route)
                         launchSingleTop = true
                     }
                 }
             }
-            composable(InnerGardenDestination.Insights.route) { InsightsScreen(viewModel<InsightsViewModel>()) }
+            composable(InnerGardenDestination.Insights.route) {
+                InsightsScreen(viewModel<InsightsViewModel> {
+                    InsightsViewModel(InsightsStateHolder(AppContainer.getRecentCheckIns, AppContainer.calculateTrend))
+                })
+            }
             composable(InnerGardenDestination.Declutter.route) { DeclutterScreen(viewModel<DeclutterViewModel>()) }
             composable(InnerGardenDestination.Settings.route) { SettingsScreen(viewModel<SettingsViewModel>(), navController::popBackStack) }
         }

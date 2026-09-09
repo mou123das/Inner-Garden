@@ -50,9 +50,10 @@ fun GardenCard(modifier: Modifier = Modifier, containerColor: Color = Color.Whit
 }
 
 @Composable
-fun InnerGardenButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun InnerGardenButton(text: String, modifier: Modifier = Modifier, enabled: Boolean = true, onClick: () -> Unit) {
     Button(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier.fillMaxWidth().height(52.dp),
         shape = RoundedCornerShape(18.dp),
         colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)

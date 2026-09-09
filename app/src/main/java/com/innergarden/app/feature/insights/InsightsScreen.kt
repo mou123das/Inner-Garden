@@ -31,6 +31,9 @@ fun InsightsScreen(viewModel: InsightsViewModel, modifier: Modifier = Modifier) 
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         SectionHeader("Insights", "Small patterns from your daily check-ins")
         Spacer(Modifier.height(2.dp)); Text("Your last 7 days", style = MaterialTheme.typography.titleLarge)
+        if (state.isEmpty) {
+            GardenCard(Modifier.fillMaxWidth()) { Text("No check-ins yet"); Spacer(Modifier.height(6.dp)); Text(state.observation, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        }
         state.metrics.chunked(2).forEach { row ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 row.forEach { metric -> MetricCard(metric, Modifier.weight(1f)) }
@@ -49,9 +52,13 @@ fun InsightsScreen(viewModel: InsightsViewModel, modifier: Modifier = Modifier) 
         Text(metric.value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(10.dp))
         Canvas(Modifier.fillMaxWidth().height(36.dp)) {
-            val step = size.width / (metric.points.size - 1)
-            metric.points.zipWithNext().forEachIndexed { index, (a, b) ->
-                drawLine(PrimaryGreen, Offset(index * step, size.height * (1 - a)), Offset((index + 1) * step, size.height * (1 - b)), 5f, StrokeCap.Round)
+            if (metric.points.size == 1) {
+                drawCircle(PrimaryGreen, 5f, Offset(size.width / 2, size.height * (1 - metric.points.first())))
+            } else if (metric.points.size > 1) {
+                val step = size.width / (metric.points.size - 1)
+                metric.points.zipWithNext().forEachIndexed { index, (a, b) ->
+                    drawLine(PrimaryGreen, Offset(index * step, size.height * (1 - a)), Offset((index + 1) * step, size.height * (1 - b)), 5f, StrokeCap.Round)
+                }
             }
         }
     }
