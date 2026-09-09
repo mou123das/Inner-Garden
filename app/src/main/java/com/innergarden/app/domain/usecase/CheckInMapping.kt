@@ -3,6 +3,7 @@ package com.innergarden.app.domain.usecase
 import com.innergarden.app.data.local.CheckInEntity
 import com.innergarden.app.domain.model.DailyCheckIn
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 
 internal fun CheckInEntity.toDomain(zoneId: ZoneId): DailyCheckIn = DailyCheckIn(
@@ -12,7 +13,10 @@ internal fun CheckInEntity.toDomain(zoneId: ZoneId): DailyCheckIn = DailyCheckIn
     stress = stress,
     energy = energy,
     sleep = sleep,
-    reflection = reflection
+    reflection = reflection,
+    localDate = runCatching { LocalDate.parse(localDate) }.getOrElse {
+        Instant.ofEpochMilli(timestampEpochMillis).atZone(zoneId).toLocalDate()
+    }
 )
 
 internal fun DailyCheckIn.toEntity(zoneId: ZoneId): CheckInEntity = CheckInEntity(
@@ -22,5 +26,6 @@ internal fun DailyCheckIn.toEntity(zoneId: ZoneId): CheckInEntity = CheckInEntit
     stress = stress,
     energy = energy,
     sleep = sleep,
-    reflection = reflection
+    reflection = reflection,
+    localDate = date.toString()
 )

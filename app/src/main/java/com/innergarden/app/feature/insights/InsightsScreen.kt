@@ -31,7 +31,17 @@ fun InsightsScreen(viewModel: InsightsViewModel, modifier: Modifier = Modifier) 
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         SectionHeader("Insights", "Small patterns from your daily check-ins")
         Spacer(Modifier.height(2.dp)); Text("Your last 7 days", style = MaterialTheme.typography.titleLarge)
-        if (state.isEmpty) {
+        if (state.isLoading) {
+            GardenCard(Modifier.fillMaxWidth()) { Text("Loading your recent check-ins...", color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        }
+        state.errorMessage?.let {
+            GardenCard(Modifier.fillMaxWidth()) {
+                Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(12.dp))
+                com.innergarden.app.ui.components.InnerGardenButton("Try again") { viewModel.onEvent(InsightsUiEvent.Retry) }
+            }
+        }
+        if (state.isEmpty && !state.isLoading && state.errorMessage == null) {
             GardenCard(Modifier.fillMaxWidth()) { Text("No check-ins yet"); Spacer(Modifier.height(6.dp)); Text(state.observation, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         }
         state.metrics.chunked(2).forEach { row ->

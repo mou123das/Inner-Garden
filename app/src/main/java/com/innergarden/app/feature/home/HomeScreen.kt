@@ -31,9 +31,16 @@ fun HomeScreen(viewModel: HomeViewModel, onCheckIn: () -> Unit, onReflection: ()
             Column { Text(state.greeting, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold); Text("Welcome to your Inner Garden", color = MaterialTheme.colorScheme.onSurfaceVariant) }
             Text("Settings", color = MaterialTheme.colorScheme.primary, modifier = Modifier.clickable { viewModel.onEvent(HomeUiEvent.Settings); onSettings() }.padding(12.dp), style = MaterialTheme.typography.labelLarge)
         }
+        state.errorMessage?.let {
+            GardenCard(Modifier.fillMaxWidth()) {
+                Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(12.dp))
+                InnerGardenButton("Try again") { viewModel.onEvent(HomeUiEvent.Retry) }
+            }
+        }
         GardenCard(Modifier.fillMaxWidth(), MaterialTheme.colorScheme.primaryContainer) {
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                TreeVisual(); Text(state.gardenStage, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold); Text(state.streak, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                TreeVisual(); Text(if (state.isLoading) "Loading your garden..." else state.gardenStage, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold); Text(state.streak, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 state.wellbeingScore?.let { Text("Recent wellbeing indicator: " + it + " / 100", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
             }
         }

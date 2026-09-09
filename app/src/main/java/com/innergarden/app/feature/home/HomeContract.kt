@@ -9,10 +9,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.catch
 
 data class HomeUiState(
     val greeting: String = "Good evening",
@@ -21,22 +23,30 @@ data class HomeUiState(
     val reflection: String = "Your next check-in will create today's reflection.",
     val hasCheckedInToday: Boolean = false,
     val wellbeingScore: Int? = null,
-    val recentSummary: String = "No check-ins yet"
+    val recentSummary: String = "No check-ins yet",
+    val isLoading: Boolean = true,
+    val errorMessage: String? = null
 )
 
-sealed interface HomeUiEvent { data object CheckIn : HomeUiEvent; data object ViewReflection : HomeUiEvent; data object Settings : HomeUiEvent }
+sealed interface HomeUiEvent { data object CheckIn : HomeUiEvent; data object ViewReflection : HomeUiEvent; data object Settings : HomeUiEvent; data object Retry : HomeUiEvent }
 
 class HomeStateHolder(
-    recentCheckIns: GetRecentCheckInsUseCase,
+    private val recentCheckIns: GetRecentCheckInsUseCase,
     private val gardenGrowth: CalculateGardenGrowthUseCase,
     private val wellbeingScore: CalculateWellbeingScoreUseCase,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 ) {
     private val _state = MutableStateFlow(HomeUiState())
     val state: StateFlow<HomeUiState> = _state.asStateFlow()
-    init {
-        scope.launch {
-            recentCheckIns().collect { checkIns ->
+    private var loadJob: Job? = null
+    init { load() }
+    private fun load() {
+        loadJob?.cancel()
+        _state.value = _state.value.copy(isLoading = true, errorMessage = null)
+        loadJob = scope.launch {
+            recentCheckIns()
+                .catch { _state.value = _state.value.copy(isLoading = false, errorMessage = "Couldn't load your garden right now. Please try again.") }
+                .collect { checkIns ->
                 val garden = gardenGrowth(checkIns)
                 val todayCheckIn = checkIns.firstOrNull { it.date == LocalDate.now() }
                 _state.value = HomeUiState(
@@ -45,12 +55,13 @@ class HomeStateHolder(
                     reflection = if (todayCheckIn == null) "Your next check-in will create today's reflection." else "Today's check-in is safely part of your garden.",
                     hasCheckedInToday = todayCheckIn != null,
                     wellbeingScore = checkIns.firstOrNull()?.let(wellbeingScore::invoke),
-                    recentSummary = if (checkIns.isEmpty()) "No check-ins yet" else minOf(7, checkIns.size).toString() + " recent check-ins"
+                    recentSummary = if (checkIns.isEmpty()) "No check-ins yet" else minOf(7, checkIns.size).toString() + " recent check-ins",
+                    isLoading = false
                 )
             }
         }
     }
-    fun onEvent(event: HomeUiEvent) = Unit
+    fun onEvent(event: HomeUiEvent) { if (event == HomeUiEvent.Retry) load() }
     fun close() = scope.cancel()
 }
 

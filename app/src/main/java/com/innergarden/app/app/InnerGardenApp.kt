@@ -29,6 +29,7 @@ import com.innergarden.app.feature.reflection.ReflectionViewModel
 import com.innergarden.app.feature.settings.SettingsScreen
 import com.innergarden.app.feature.settings.SettingsViewModel
 import com.innergarden.app.feature.splash.SplashScreen
+import com.innergarden.app.feature.splash.SplashStateHolder
 import com.innergarden.app.feature.splash.SplashViewModel
 import com.innergarden.app.navigation.InnerGardenDestination
 import com.innergarden.app.ui.components.InnerGardenBottomBar
@@ -57,7 +58,9 @@ fun InnerGardenApp() {
     ) { padding ->
         NavHost(navController, startDestination = InnerGardenDestination.Splash.route, modifier = Modifier.padding(padding)) {
             composable(InnerGardenDestination.Splash.route) {
-                SplashScreen(viewModel<SplashViewModel>()) {
+                SplashScreen(
+                    viewModel<SplashViewModel> { SplashViewModel(SplashStateHolder(AppContainer.ensureAuthenticated)) }
+                ) {
                     navController.navigate(InnerGardenDestination.Home.route) {
                         popUpTo(InnerGardenDestination.Splash.route) { inclusive = true }
                     }

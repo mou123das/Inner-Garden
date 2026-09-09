@@ -10,7 +10,8 @@ data class DailyCheckIn(
     val stress: Int,
     val energy: Int,
     val sleep: Int,
-    val reflection: String?
+    val reflection: String?,
+    val localDate: LocalDate = timestamp.toLocalDate()
 ) {
-    val date: LocalDate get() = timestamp.toLocalDate()
+    val date: LocalDate get() = localDate
 }

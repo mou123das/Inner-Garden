@@ -14,7 +14,10 @@ class InMemoryCheckInDataSource(seedData: List<CheckInEntity> = emptyList()) : C
 
     override suspend fun save(checkIn: CheckInEntity) {
         mutex.withLock {
-            checkIns.value = (checkIns.value + checkIn).sortedByDescending { it.timestampEpochMillis }
+            val withoutSameDay = if (checkIn.localDate.isBlank()) checkIns.value else {
+                checkIns.value.filterNot { it.localDate == checkIn.localDate }
+            }
+            checkIns.value = (withoutSameDay + checkIn).sortedByDescending { it.timestampEpochMillis }
         }
     }
 }

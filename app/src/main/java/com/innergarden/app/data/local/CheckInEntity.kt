@@ -7,5 +7,6 @@ data class CheckInEntity(
     val stress: Int,
     val energy: Int,
     val sleep: Int,
-    val reflection: String?
+    val reflection: String?,
+    val localDate: String = ""
 )
