@@ -113,13 +113,8 @@ fun InnerGardenApp() {
                             )
                         )
                     },
-                    navController::popBackStack
-                ) {
-                    navController.navigate(InnerGardenDestination.Home.route) {
-                        popUpTo(InnerGardenDestination.Home.route)
-                        launchSingleTop = true
-                    }
-                }
+                    returnToGarden
+                )
             }
             composable(InnerGardenDestination.Insights.route) {
                 InsightsScreen(

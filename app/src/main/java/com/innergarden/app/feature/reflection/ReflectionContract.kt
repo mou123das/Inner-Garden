@@ -14,7 +14,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class ReflectionUiState(val guidance: ReflectionGuidance, val isLoading: Boolean)
+data class ReflectionUiState(
+    val guidance: ReflectionGuidance,
+    val isLoading: Boolean,
+    val hasWrittenReflection: Boolean
+)
 sealed interface ReflectionUiEvent { data object BackToGarden : ReflectionUiEvent }
 class ReflectionStateHolder(
     reflection: String,
@@ -22,7 +26,13 @@ class ReflectionStateHolder(
     initialGuidance: ReflectionGuidance,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 ) {
-    private val _state = MutableStateFlow(ReflectionUiState(initialGuidance, reflection.isNotBlank()))
+    private val _state = MutableStateFlow(
+        ReflectionUiState(
+            guidance = initialGuidance,
+            isLoading = reflection.isNotBlank(),
+            hasWrittenReflection = reflection.isNotBlank()
+        )
+    )
     val state: StateFlow<ReflectionUiState> = _state.asStateFlow()
     init {
         if (reflection.isNotBlank()) scope.launch {

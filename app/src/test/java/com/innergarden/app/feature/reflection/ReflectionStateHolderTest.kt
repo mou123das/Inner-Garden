@@ -22,6 +22,7 @@ class ReflectionStateHolderTest {
             this
         )
         assertTrue(holder.state.value.isLoading)
+        assertTrue(holder.state.value.hasWrittenReflection)
         delay(25)
         assertTrue(holder.state.value.isLoading)
         delay(3_000)
@@ -35,6 +36,7 @@ class ReflectionStateHolderTest {
         val fallback = GetPlaceholderReflectionGuidanceUseCase()
         val holder = ReflectionStateHolder(" ", GenerateReflectionGuidanceUseCase(repository, fallback), fallback(), this)
         assertFalse(holder.state.value.isLoading)
+        assertFalse(holder.state.value.hasWrittenReflection)
         assertEquals(fallback(), holder.state.value.guidance)
         assertEquals(0, repository.reflectionCalls)
     }
