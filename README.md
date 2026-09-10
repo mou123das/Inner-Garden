@@ -419,3 +419,6 @@ Inner Garden currently includes anonymous entry, cloud-backed daily check-ins, d
 <p align="center">
   🌱 <strong>Grow gently, one day at a time.</strong>
 </p>
+
+---
+<sub><i>Inner Garden – Google Patchamomma 2026</i></sub>
