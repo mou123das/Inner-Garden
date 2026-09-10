@@ -33,50 +33,69 @@ Inner Garden is designed around a small daily rhythm:
   <strong>Arrive → Check in → Reflect → Grow → Notice → Declutter</strong>
 </p>
 
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <img src="assets/gifs/homescreen.gif" width="270" alt="Inner Garden home screen"/>
-      <br/>
-      <strong>🌳 Your Garden</strong>
-      <br/>
-      <sub>A living home that grows through showing up.</sub>
-    </td>
-    <td align="center" width="50%">
-      <img src="assets/gifs/dailyCheckIn.gif" width="270" alt="Inner Garden daily check-in"/>
-      <br/>
-      <strong>🌿 Daily Check-In</strong>
-      <br/>
-      <sub>Notice mood, stress, energy, sleep, and optionally write.</sub>
-    </td>
-  </tr>
+<table width="100%">
+<tr>
+<td align="center" width="50%">
+<br/>
+<strong>🌳 Your Garden</strong>
+<br/>
+<sub><i>A living home that grows through showing up.</i></sub>
+<hr width="30%">
+<img src="assets/gifs/homescreen.gif" width="270" alt="Inner Garden home screen"/>
+<br/>
+<br/>
+</td>
+<td align="center" width="50%">
+<br/>
+<strong>🌿 Daily Check-In</strong>
+<br/>
+<sub><i>Notice mood, stress, energy, sleep, and optionally write.</i></sub>
+<hr width="30%">
+<img src="assets/gifs/dailyCheckIn.gif" width="270" alt="Inner Garden daily check-in"/>
+<br/>
+<br/>
+</td>
+</tr>
+</table>
 
-  <tr>
-    <td align="center" width="50%">
-      <img src="assets/gifs/reflections.gif" width="270" alt="Inner Garden reflection guidance"/>
-      <br/>
-      <strong>✨ Guided Reflection</strong>
-      <br/>
-      <sub>Turn a written thought into gentle, bounded reflection guidance.</sub>
-    </td>
-    <td align="center" width="50%">
-      <img src="assets/gifs/insights.gif" width="270" alt="Inner Garden wellbeing insights"/>
-      <br/>
-      <strong>📊 Weekly Insights</strong>
-      <br/>
-      <sub>See recent patterns without turning emotions into judgments.</sub>
-    </td>
-  </tr>
+<table width="100%">
+<tr>
+<td align="center" width="50%">
+<br/>
+<strong>✨ Guided Reflection</strong>
+<br/>
+<sub><i>Turn a written thought into gentle, bounded reflection guidance.</i></sub>
+<hr width="30%">
+<img src="assets/gifs/reflections.gif" width="270" alt="Inner Garden reflection guidance"/>
+<br/>
+<br/>
+</td>
+<td align="center" width="50%">
+<br/>
+<strong>📊 Weekly Insights</strong>
+<br/>
+<sub><i>See recent patterns without turning emotions into judgments.</i></sub>
+<hr width="30%">
+<img src="assets/gifs/insights.gif" width="270" alt="Inner Garden wellbeing insights"/>
+<br/>
+<br/>
+</td>
+</tr>
+</table>
 
-  <tr>
-    <td colspan="2" align="center">
-      <img src="assets/gifs/declutter.gif" width="300" alt="Inner Garden Mind Declutter"/>
-      <br/>
-      <strong>🍃 Mind Declutter</strong>
-      <br/>
-      <sub>Gather recent reflections, notice recurring themes, and make a little space for the week ahead.</sub>
-    </td>
-  </tr>
+<table width="100%">
+<tr>
+<td align="center" width="100%">
+<br/>
+<strong>🍃 Mind Declutter</strong>
+<br/>
+<sub><i>Gather recent reflections, notice recurring themes, and make a little space for the week ahead.</i></sub>
+<hr width="15%">
+<img src="assets/gifs/declutter.gif" width="300" alt="Inner Garden Mind Declutter"/>
+<br/>
+<br/>
+</td>
+</tr>
 </table>
 
 ---
