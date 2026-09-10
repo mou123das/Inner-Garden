@@ -41,6 +41,11 @@ import com.innergarden.app.ui.components.bottomDestinations
 @Composable
 fun InnerGardenApp() {
     val navController = rememberNavController()
+    val declutterViewModel = viewModel<DeclutterViewModel> {
+        DeclutterViewModel(
+            DeclutterStateHolder(AppContainer.getRecentReflections, AppContainer.generateWeeklyDeclutter)
+        )
+    }
     var pendingReflection by remember { mutableStateOf("") }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -126,11 +131,7 @@ fun InnerGardenApp() {
             }
             composable(InnerGardenDestination.Declutter.route) {
                 DeclutterScreen(
-                    viewModel<DeclutterViewModel> {
-                        DeclutterViewModel(
-                            DeclutterStateHolder(AppContainer.getRecentReflections, AppContainer.generateWeeklyDeclutter)
-                        )
-                    },
+                    declutterViewModel,
                     returnToGarden
                 )
             }

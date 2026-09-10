@@ -12,7 +12,13 @@ class GetRecentCheckInsUseCase(
 ) {
     operator fun invoke(limit: Int? = null): Flow<List<DailyCheckIn>> =
         repository.observeAll().map { entities ->
-            val recent = entities.sortedByDescending { it.timestampEpochMillis }
-            (limit?.let(recent::take) ?: recent).map { it.toDomain(zoneId) }
+            entities.toRecentDomain(limit)
         }
+
+    suspend fun load(limit: Int? = null): List<DailyCheckIn> = repository.loadAll().toRecentDomain(limit)
+
+    private fun List<com.innergarden.app.data.local.CheckInEntity>.toRecentDomain(limit: Int?): List<DailyCheckIn> {
+        val recent = sortedByDescending { it.timestampEpochMillis }
+        return (limit?.let(recent::take) ?: recent).map { it.toDomain(zoneId) }
+    }
 }

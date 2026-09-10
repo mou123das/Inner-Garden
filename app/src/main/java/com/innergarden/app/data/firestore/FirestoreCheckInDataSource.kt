@@ -36,6 +36,13 @@ class FirestoreCheckInDataSource(
         awaitClose { registration.remove() }
     }
 
+    override suspend fun loadAll(): List<CheckInEntity> {
+        val userId = requireUserId()
+        return checkIns(userId).get().await().documents
+            .mapNotNull(::toEntity)
+            .sortedByDescending { it.localDate }
+    }
+
     override suspend fun save(checkIn: CheckInEntity) {
         val userId = requireUserId()
         val localDate = checkIn.localDate.takeIf { runCatching { LocalDate.parse(it) }.isSuccess }

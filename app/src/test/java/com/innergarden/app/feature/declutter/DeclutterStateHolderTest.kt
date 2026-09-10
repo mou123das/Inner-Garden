@@ -60,6 +60,18 @@ class DeclutterStateHolderTest {
         assertEquals(0, ai.calls)
     }
 
+    @Test fun generationUsesAllReflectionsFromFreshOneShotLoad() = runBlocking {
+        val ai = WaitingAiRepository()
+        val holder = holder(ai, this, FreshSnapshotRepository())
+
+        holder.onEvent(DeclutterUiEvent.DeclutterWeek)
+        delay(25)
+
+        assertEquals(listOf("First idea", "Second idea", "Third idea"), ai.lastReflections)
+        ai.response.complete(validWeekly)
+        delay(3_000)
+    }
+
     private fun holder(ai: AiRepository, scope: CoroutineScope, repository: CheckInRepository = RecentRepository()) = DeclutterStateHolder(
         GetRecentReflectionsUseCase(GetRecentCheckInsUseCase(repository)),
         GenerateWeeklyDeclutterUseCase(ai),
@@ -72,6 +84,19 @@ private class EmptyRecentRepository : CheckInRepository {
     override suspend fun save(checkIn: CheckInEntity) = Unit
 }
 
+private class FreshSnapshotRepository : CheckInRepository {
+    override fun observeAll(): Flow<List<CheckInEntity>> = flowOf(listOf(entry("Cached idea", 1L)))
+    override suspend fun loadAll(): List<CheckInEntity> = listOf(
+        entry("First idea", 1L),
+        entry("Second idea", 2L),
+        entry("Third idea", 3L)
+    )
+    override suspend fun save(checkIn: CheckInEntity) = Unit
+
+    private fun entry(reflection: String, timestamp: Long) =
+        CheckInEntity(timestamp.toString(), timestamp, 3, 3, 3, 3, reflection, LocalDate.now().toString())
+}
+
 private class RecentRepository : CheckInRepository {
     override fun observeAll(): Flow<List<CheckInEntity>> = flowOf(
         listOf(CheckInEntity("1", 1L, 3, 3, 3, 3, "A synthetic reflection", LocalDate.now().toString()))
@@ -82,8 +107,10 @@ private class RecentRepository : CheckInRepository {
 private class WaitingAiRepository : AiRepository {
     val response = CompletableDeferred<WeeklyDeclutter>()
     var calls = 0
+    var lastReflections: List<String> = emptyList()
     override suspend fun generateWeeklyDeclutter(reflections: List<String>): WeeklyDeclutter {
         calls++
+        lastReflections = reflections
         return response.await()
     }
     override suspend fun generateReflectionGuidance(reflection: String): ReflectionGuidance = error("Unused")
