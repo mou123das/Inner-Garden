@@ -44,7 +44,7 @@ Inner Garden is designed around a small daily rhythm:
       <sub>A living home that grows through showing up.</sub>
     </td>
     <td align="center" width="50%">
-      <img src="assets/gifs/dailycheckin.gif" width="270" alt="Inner Garden daily check-in"/>
+      <img src="assets/gifs/dailyCheckIn.gif" width="270" alt="Inner Garden daily check-in"/>
       <br/>
       <strong>🌿 Daily Check-In</strong>
       <br/>
