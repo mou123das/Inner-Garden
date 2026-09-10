@@ -31,4 +31,15 @@ class GenerateWeeklyDeclutterUseCaseTest {
         )
         assertTrue(GenerateWeeklyDeclutterUseCase(repository)(listOf("Reflection")) is WeeklyDeclutterResult.Failure)
     }
+
+    @Test fun multipleGeneratedThemesArePreserved() = runBlocking {
+        val themes = listOf("Focused mornings", "Taking breaks", "Time outdoors")
+        val repository = FakeAiRepository(
+            weeklyResult = Result.success(WeeklyDeclutter("Summary", themes, "Carry", "Question?"))
+        )
+
+        val result = GenerateWeeklyDeclutterUseCase(repository)(listOf("One", "Two", "Three"))
+
+        assertEquals(WeeklyDeclutterResult.Success(WeeklyDeclutter("Summary", themes, "Carry", "Question?")), result)
+    }
 }

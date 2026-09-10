@@ -157,9 +157,9 @@ fun AnimatedDeclutterLoading(modifier: Modifier = Modifier) {
                 drawCircle(PrimaryGreen.copy(alpha = gathering), 4.dp.toPx(), target)
             }
             Spacer(Modifier.height(4.dp))
-            Text("Gathering the week", color = DeepForest, fontWeight = FontWeight.SemiBold)
+            Text("Gathering your reflections…", color = DeepForest, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(3.dp))
-            Text("Bringing your reflections into focus.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Bringing scattered thoughts into focus.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

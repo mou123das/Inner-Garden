@@ -49,11 +49,27 @@ class DeclutterStateHolderTest {
         assertEquals(DeclutterStatus.ERROR, holder.state.value.status)
     }
 
-    private fun holder(ai: AiRepository, scope: CoroutineScope) = DeclutterStateHolder(
-        GetRecentReflectionsUseCase(GetRecentCheckInsUseCase(RecentRepository())),
+    @Test fun emptyReflectionsShowEmptyWithoutCallingAi() = runBlocking {
+        val ai = WaitingAiRepository()
+        val holder = holder(ai, this, EmptyRecentRepository())
+
+        holder.onEvent(DeclutterUiEvent.DeclutterWeek)
+        delay(25)
+
+        assertEquals(DeclutterStatus.EMPTY, holder.state.value.status)
+        assertEquals(0, ai.calls)
+    }
+
+    private fun holder(ai: AiRepository, scope: CoroutineScope, repository: CheckInRepository = RecentRepository()) = DeclutterStateHolder(
+        GetRecentReflectionsUseCase(GetRecentCheckInsUseCase(repository)),
         GenerateWeeklyDeclutterUseCase(ai),
         scope
     )
+}
+
+private class EmptyRecentRepository : CheckInRepository {
+    override fun observeAll(): Flow<List<CheckInEntity>> = flowOf(emptyList())
+    override suspend fun save(checkIn: CheckInEntity) = Unit
 }
 
 private class RecentRepository : CheckInRepository {
@@ -74,5 +90,8 @@ private class WaitingAiRepository : AiRepository {
 }
 
 private val validWeekly = WeeklyDeclutter(
-    "The week had a few quiet moments.", listOf("Quiet time helped"), "Make room for a pause.", "What helped?"
+    "The week had a few quiet moments.",
+    listOf("Quiet time helped", "Taking breaks", "Time outdoors"),
+    "Make room for a pause.",
+    "What helped?"
 )
