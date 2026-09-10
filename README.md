@@ -5,7 +5,7 @@
 Inner Garden is a calm Android wellbeing app that helps people pause, record a daily check-in, notice recent patterns, and reflect on recurring thoughts. The experience combines private user-generated check-ins, deterministic wellbeing insights, a growing garden metaphor, and carefully bounded AI guidance.
 
 <p align="center">
-  <img src="assets/gifs/welcome.gif" width="300" alt="Inner Garden welcome experience"/>
+  <img src="assets/image/innerGarden.png" width="1495" alt="Inner Garden welcome experience"/>
 </p>
 
 <p align="center">
