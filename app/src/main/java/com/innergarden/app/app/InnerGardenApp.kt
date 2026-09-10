@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -16,6 +19,7 @@ import com.innergarden.app.feature.checkin.CheckInScreen
 import com.innergarden.app.feature.checkin.CheckInStateHolder
 import com.innergarden.app.feature.checkin.CheckInViewModel
 import com.innergarden.app.feature.declutter.DeclutterScreen
+import com.innergarden.app.feature.declutter.DeclutterStateHolder
 import com.innergarden.app.feature.declutter.DeclutterViewModel
 import com.innergarden.app.feature.home.HomeScreen
 import com.innergarden.app.feature.home.HomeStateHolder
@@ -38,6 +42,7 @@ import com.innergarden.app.ui.components.bottomDestinations
 @Composable
 fun InnerGardenApp() {
     val navController = rememberNavController()
+    var pendingReflection by remember { mutableStateOf("") }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val showBottomBar = bottomDestinations.any { it.route == currentRoute }
@@ -72,7 +77,10 @@ fun InnerGardenApp() {
                         HomeViewModel(HomeStateHolder(AppContainer.getRecentCheckIns, AppContainer.calculateGardenGrowth, AppContainer.calculateWellbeingScore))
                     },
                     onCheckIn = { navController.navigate(InnerGardenDestination.CheckIn.route) },
-                    onReflection = { navController.navigate(InnerGardenDestination.Reflection.route) },
+                    onReflection = {
+                        pendingReflection = ""
+                        navController.navigate(InnerGardenDestination.Reflection.route)
+                    },
                     onSettings = { navController.navigate(InnerGardenDestination.Settings.route) }
                 )
             }
@@ -80,13 +88,22 @@ fun InnerGardenApp() {
                 CheckInScreen(
                     viewModel<CheckInViewModel> { CheckInViewModel(CheckInStateHolder(AppContainer.saveDailyCheckIn)) },
                     navController::popBackStack
-                ) {
+                ) { reflection ->
+                    pendingReflection = reflection
                     navController.navigate(InnerGardenDestination.Reflection.route)
                 }
             }
             composable(InnerGardenDestination.Reflection.route) {
                 ReflectionScreen(
-                    viewModel<ReflectionViewModel> { ReflectionViewModel(ReflectionStateHolder(AppContainer.getPlaceholderReflectionGuidance)) },
+                    viewModel<ReflectionViewModel> {
+                        ReflectionViewModel(
+                            ReflectionStateHolder(
+                                pendingReflection,
+                                AppContainer.generateReflectionGuidance,
+                                AppContainer.getPlaceholderReflectionGuidance()
+                            )
+                        )
+                    },
                     navController::popBackStack
                 ) {
                     navController.navigate(InnerGardenDestination.Home.route) {
@@ -100,7 +117,13 @@ fun InnerGardenApp() {
                     InsightsViewModel(InsightsStateHolder(AppContainer.getRecentCheckIns, AppContainer.calculateTrend))
                 })
             }
-            composable(InnerGardenDestination.Declutter.route) { DeclutterScreen(viewModel<DeclutterViewModel>()) }
+            composable(InnerGardenDestination.Declutter.route) {
+                DeclutterScreen(viewModel<DeclutterViewModel> {
+                    DeclutterViewModel(
+                        DeclutterStateHolder(AppContainer.getRecentReflections, AppContainer.generateWeeklyDeclutter)
+                    )
+                })
+            }
             composable(InnerGardenDestination.Settings.route) { SettingsScreen(viewModel<SettingsViewModel>(), navController::popBackStack) }
         }
     }

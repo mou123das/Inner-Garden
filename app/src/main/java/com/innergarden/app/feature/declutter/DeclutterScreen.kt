@@ -24,12 +24,42 @@ fun DeclutterScreen(viewModel: DeclutterViewModel, modifier: Modifier = Modifier
     val state = viewModel.uiState.collectAsStateWithLifecycle().value
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         SectionHeader("Mind Declutter", "A little space for the thoughts you've been carrying this week.")
-        GardenCard(Modifier.fillMaxWidth(), MaterialTheme.colorScheme.primaryContainer) {
-            SectionHeader("This week's themes"); Spacer(Modifier.height(12.dp))
-            state.themes.forEach { Text("•  $it", modifier = Modifier.padding(vertical = 6.dp)) }
+        when (state.status) {
+            DeclutterStatus.IDLE -> GardenCard(Modifier.fillMaxWidth()) {
+                Text("When you're ready, gather your recent reflections into a gentle weekly look-back.")
+            }
+            DeclutterStatus.LOADING -> GardenCard(Modifier.fillMaxWidth()) {
+                Text("Gathering your reflections...", color = MaterialTheme.colorScheme.primary)
+            }
+            DeclutterStatus.EMPTY -> GardenCard(Modifier.fillMaxWidth()) {
+                Text("Add a few reflections this week and your Mind Declutter will help you look back on recurring themes.")
+            }
+            DeclutterStatus.ERROR -> GardenCard(Modifier.fillMaxWidth()) {
+                Text("Mind Declutter isn't available right now. Please try again later.")
+            }
+            DeclutterStatus.CONTENT -> state.declutter?.let { declutter ->
+                GardenCard(Modifier.fillMaxWidth()) {
+                    SectionHeader("This week's summary"); Spacer(Modifier.height(10.dp)); Text(declutter.summary)
+                }
+                GardenCard(Modifier.fillMaxWidth(), MaterialTheme.colorScheme.primaryContainer) {
+                    SectionHeader("This week's themes"); Spacer(Modifier.height(12.dp))
+                    declutter.recurringThemes.forEach { Text("•  $it", modifier = Modifier.padding(vertical = 6.dp)) }
+                }
+                SectionHeader("What you may want to carry forward")
+                GardenCard(Modifier.fillMaxWidth()) { Text(declutter.carryForwardReflection) }
+                SectionHeader("Something to reflect on")
+                Text(declutter.reflectionQuestion)
+            }
         }
-        SectionHeader("What you may want to carry forward")
-        GardenCard(Modifier.fillMaxWidth()) { Text(state.carryForward) }
-        InnerGardenButton("Declutter this week") { viewModel.onEvent(DeclutterUiEvent.DeclutterWeek) }
+        InnerGardenButton(
+            text = when (state.status) {
+                DeclutterStatus.LOADING -> "Gathering reflections..."
+                DeclutterStatus.ERROR -> "Try again"
+                else -> "Declutter this week"
+            },
+            enabled = state.status != DeclutterStatus.LOADING
+        ) {
+            viewModel.onEvent(if (state.status == DeclutterStatus.ERROR) DeclutterUiEvent.Retry else DeclutterUiEvent.DeclutterWeek)
+        }
     }
 }

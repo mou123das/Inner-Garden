@@ -23,12 +23,12 @@ import com.innergarden.app.ui.components.InnerGardenButton
 import com.innergarden.app.ui.components.RatingSelector
 
 @Composable
-fun CheckInScreen(viewModel: CheckInViewModel, onBack: () -> Unit, onSaved: () -> Unit) {
+fun CheckInScreen(viewModel: CheckInViewModel, onBack: () -> Unit, onSaved: (String) -> Unit) {
     val state = viewModel.uiState.collectAsStateWithLifecycle().value
     LaunchedEffect(state.saveCompleted) {
         if (state.saveCompleted) {
             viewModel.onEvent(CheckInUiEvent.SaveHandled)
-            onSaved()
+            onSaved(state.reflection)
         }
     }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {

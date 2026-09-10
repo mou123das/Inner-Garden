@@ -23,14 +23,21 @@ import com.innergarden.app.ui.components.SectionHeader
 
 @Composable
 fun ReflectionScreen(viewModel: ReflectionViewModel, onBack: () -> Unit, onGarden: () -> Unit) {
-    val guidance = viewModel.uiState.collectAsStateWithLifecycle().value.guidance
+    val state = viewModel.uiState.collectAsStateWithLifecycle().value
+    val guidance = state.guidance
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         BackHeader("Your Reflection", onBack = onBack)
         Text("✓  Check-in complete", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
-        ReflectionCard("Your reflection", guidance.summary)
-        ReflectionCard("A thought for you", guidance.affirmation, true)
-        SectionHeader("Something to reflect on"); Text(guidance.reflectionQuestion)
-        SectionHeader("Try something small"); Text(guidance.wellnessActivity)
+        if (state.isLoading) {
+            GardenCard(Modifier.fillMaxWidth()) {
+                Text("Preparing a gentle reflection...", color = MaterialTheme.colorScheme.primary)
+            }
+        } else {
+            ReflectionCard("Your reflection", guidance.summary)
+            ReflectionCard("A thought for you", guidance.affirmation, true)
+            SectionHeader("Something to reflect on"); Text(guidance.reflectionQuestion)
+            SectionHeader("Try something small"); Text(guidance.wellnessActivity)
+        }
         InnerGardenButton("Back to Garden") { viewModel.onEvent(ReflectionUiEvent.BackToGarden); onGarden() }
         Spacer(Modifier.height(8.dp))
     }

@@ -28,3 +28,10 @@ data class ReflectionGuidance(
     val reflectionQuestion: String,
     val wellnessActivity: String
 )
+
+data class WeeklyDeclutter(
+    val summary: String,
+    val recurringThemes: List<String>,
+    val carryForwardReflection: String,
+    val reflectionQuestion: String
+)
