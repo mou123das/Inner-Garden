@@ -10,7 +10,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -46,16 +45,26 @@ fun InnerGardenApp() {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val showBottomBar = bottomDestinations.any { it.route == currentRoute }
+    val returnToGarden = {
+        if (!navController.popBackStack(InnerGardenDestination.Home.route, inclusive = false)) {
+            navController.navigate(InnerGardenDestination.Home.route) { launchSingleTop = true }
+        }
+        Unit
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             if (showBottomBar) {
                 InnerGardenBottomBar(currentRoute) { route ->
-                    navController.navigate(route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+                    if (route == InnerGardenDestination.Home.route) {
+                        returnToGarden()
+                    } else if (route != currentRoute) {
+                        navController.navigate(route) {
+                            popUpTo(InnerGardenDestination.Home.route) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 }
             }
@@ -113,16 +122,22 @@ fun InnerGardenApp() {
                 }
             }
             composable(InnerGardenDestination.Insights.route) {
-                InsightsScreen(viewModel<InsightsViewModel> {
-                    InsightsViewModel(InsightsStateHolder(AppContainer.getRecentCheckIns, AppContainer.calculateTrend))
-                })
+                InsightsScreen(
+                    viewModel<InsightsViewModel> {
+                        InsightsViewModel(InsightsStateHolder(AppContainer.getRecentCheckIns, AppContainer.calculateTrend))
+                    },
+                    returnToGarden
+                )
             }
             composable(InnerGardenDestination.Declutter.route) {
-                DeclutterScreen(viewModel<DeclutterViewModel> {
-                    DeclutterViewModel(
-                        DeclutterStateHolder(AppContainer.getRecentReflections, AppContainer.generateWeeklyDeclutter)
-                    )
-                })
+                DeclutterScreen(
+                    viewModel<DeclutterViewModel> {
+                        DeclutterViewModel(
+                            DeclutterStateHolder(AppContainer.getRecentReflections, AppContainer.generateWeeklyDeclutter)
+                        )
+                    },
+                    returnToGarden
+                )
             }
             composable(InnerGardenDestination.Settings.route) { SettingsScreen(viewModel<SettingsViewModel>(), navController::popBackStack) }
         }

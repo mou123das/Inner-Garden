@@ -7,18 +7,18 @@ import androidx.compose.runtime.Composable
 private val GardenColorScheme = lightColorScheme(
     primary = PrimaryGreen,
     onPrimary = GardenSurface,
-    primaryContainer = PaleMint,
+    primaryContainer = MintSurface,
     onPrimaryContainer = DeepForest,
     secondary = FreshGreen,
     onSecondary = GardenSurface,
-    secondaryContainer = Mint,
+    secondaryContainer = MintSurfaceStrong,
     onSecondaryContainer = DeepForest,
     tertiary = SoftGreen,
     background = GardenBackground,
     onBackground = GardenText,
     surface = GardenSurface,
     onSurface = GardenText,
-    surfaceVariant = PaleMint,
+    surfaceVariant = SoftGardenSurface,
     onSurfaceVariant = GardenTextSecondary,
     outline = SoftGreen
 )

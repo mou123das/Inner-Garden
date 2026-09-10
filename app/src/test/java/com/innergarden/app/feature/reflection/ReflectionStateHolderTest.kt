@@ -23,6 +23,8 @@ class ReflectionStateHolderTest {
         )
         assertTrue(holder.state.value.isLoading)
         delay(25)
+        assertTrue(holder.state.value.isLoading)
+        delay(3_000)
         assertFalse(holder.state.value.isLoading)
         assertEquals(validGuidance, holder.state.value.guidance)
         assertEquals(1, repository.reflectionCalls)

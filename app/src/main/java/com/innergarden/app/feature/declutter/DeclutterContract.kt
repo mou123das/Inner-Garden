@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +24,7 @@ data class DeclutterUiState(
 )
 
 sealed interface DeclutterUiEvent {
+    data object ScreenShown : DeclutterUiEvent
     data object DeclutterWeek : DeclutterUiEvent
     data object Retry : DeclutterUiEvent
 }
@@ -34,19 +36,35 @@ class DeclutterStateHolder(
 ) {
     private val _state = MutableStateFlow(DeclutterUiState())
     val state: StateFlow<DeclutterUiState> = _state.asStateFlow()
+    private var generationJob: kotlinx.coroutines.Job? = null
 
     fun onEvent(event: DeclutterUiEvent) {
         when (event) {
+            DeclutterUiEvent.ScreenShown -> if (_state.value.status == DeclutterStatus.EMPTY) {
+                _state.value = DeclutterUiState()
+            }
             DeclutterUiEvent.DeclutterWeek, DeclutterUiEvent.Retry -> generate()
         }
     }
 
     private fun generate() {
-        if (_state.value.status == DeclutterStatus.LOADING) return
-        _state.update { it.copy(status = DeclutterStatus.LOADING, declutter = null) }
-        scope.launch {
-            val result = runCatching { generateWeeklyDeclutter(getRecentReflections()) }
+        if (generationJob?.isActive == true) return
+        generationJob = scope.launch {
+            val reflections = runCatching { getRecentReflections() }.getOrElse {
+                _state.value = DeclutterUiState(DeclutterStatus.ERROR)
+                return@launch
+            }
+            if (reflections.isEmpty()) {
+                _state.value = DeclutterUiState(DeclutterStatus.EMPTY)
+                return@launch
+            }
+
+            _state.value = DeclutterUiState(DeclutterStatus.LOADING)
+            val loadingStartedAt = System.nanoTime()
+            val result = runCatching { generateWeeklyDeclutter(reflections) }
                 .getOrDefault(WeeklyDeclutterResult.Failure)
+            val elapsedMillis = (System.nanoTime() - loadingStartedAt) / 1_000_000L
+            delay((MINIMUM_LOADING_MILLIS - elapsedMillis).coerceAtLeast(0L))
             _state.value = when (result) {
                 is WeeklyDeclutterResult.Success -> DeclutterUiState(DeclutterStatus.CONTENT, result.declutter)
                 WeeklyDeclutterResult.Empty -> DeclutterUiState(DeclutterStatus.EMPTY)
@@ -56,6 +74,10 @@ class DeclutterStateHolder(
     }
 
     fun close() = scope.cancel()
+
+    private companion object {
+        const val MINIMUM_LOADING_MILLIS = 3000L
+    }
 }
 
 class DeclutterViewModel(private val holder: DeclutterStateHolder) : ViewModel() {

@@ -15,6 +15,22 @@ import org.junit.Test
 
 class CheckInStateHolderTest {
     @Test
+    fun metricSelectionEventsKeepExistingOneToFiveSemantics() {
+        val holder = CheckInStateHolder(SaveDailyCheckInUseCase(ImmediateRepository()))
+
+        holder.onEvent(CheckInUiEvent.MoodChanged(1))
+        holder.onEvent(CheckInUiEvent.StressChanged(2))
+        holder.onEvent(CheckInUiEvent.EnergyChanged(4))
+        holder.onEvent(CheckInUiEvent.SleepChanged(5))
+
+        assertEquals(1, holder.state.value.mood)
+        assertEquals(2, holder.state.value.stress)
+        assertEquals(4, holder.state.value.energy)
+        assertEquals(5, holder.state.value.sleep)
+        holder.close()
+    }
+
+    @Test
     fun timeoutStopsSavingPreservesInputAndAllowsRetry() = runBlocking {
         val holder = CheckInStateHolder(
             saveDailyCheckIn = SaveDailyCheckInUseCase(HangingRepository()),

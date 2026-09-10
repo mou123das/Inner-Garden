@@ -25,12 +25,14 @@ class DeclutterStateHolderTest {
 
         holder.onEvent(DeclutterUiEvent.DeclutterWeek)
         holder.onEvent(DeclutterUiEvent.DeclutterWeek)
-        assertEquals(DeclutterStatus.LOADING, holder.state.value.status)
         delay(25)
+        assertEquals(DeclutterStatus.LOADING, holder.state.value.status)
         assertEquals(1, ai.calls)
 
         ai.response.complete(validWeekly)
         delay(25)
+        assertEquals(DeclutterStatus.LOADING, holder.state.value.status)
+        delay(3_000)
         assertEquals(DeclutterStatus.CONTENT, holder.state.value.status)
         assertEquals(validWeekly, holder.state.value.declutter)
     }
@@ -42,6 +44,8 @@ class DeclutterStateHolderTest {
         delay(25)
         ai.response.completeExceptionally(IllegalStateException())
         delay(25)
+        assertEquals(DeclutterStatus.LOADING, holder.state.value.status)
+        delay(3_000)
         assertEquals(DeclutterStatus.ERROR, holder.state.value.status)
     }
 

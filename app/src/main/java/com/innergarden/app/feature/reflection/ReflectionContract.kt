@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,12 +26,19 @@ class ReflectionStateHolder(
     val state: StateFlow<ReflectionUiState> = _state.asStateFlow()
     init {
         if (reflection.isNotBlank()) scope.launch {
+            val loadingStartedAt = System.nanoTime()
             val guidance = generateGuidance(reflection)
+            val elapsedMillis = (System.nanoTime() - loadingStartedAt) / 1_000_000L
+            delay((MINIMUM_LOADING_MILLIS - elapsedMillis).coerceAtLeast(0L))
             _state.update { it.copy(guidance = guidance, isLoading = false) }
         }
     }
     fun onEvent(event: ReflectionUiEvent) = Unit
     fun close() = scope.cancel()
+
+    private companion object {
+        const val MINIMUM_LOADING_MILLIS = 3000L
+    }
 }
 class ReflectionViewModel(private val holder: ReflectionStateHolder) : ViewModel() {
     val uiState = holder.state

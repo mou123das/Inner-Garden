@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import com.innergarden.app.domain.model.DailyCheckIn
 import com.innergarden.app.domain.usecase.CalculateTrendUseCase
 import com.innergarden.app.domain.usecase.GetRecentCheckInsUseCase
+import java.time.LocalDate
+import java.time.format.TextStyle
 import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +18,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.catch
 
-data class InsightMetric(val label: String, val value: String, val points: List<Float>)
+data class DailyMetricPoint(val dayLabel: String, val value: Float?)
+data class InsightMetric(val label: String, val value: String, val points: List<DailyMetricPoint>)
 data class InsightsUiState(
     val metrics: List<InsightMetric> = emptyList(),
     val observation: String = "Complete a check-in to begin seeing your recent patterns.",
@@ -57,9 +60,24 @@ class InsightsStateHolder(
         }
     }
     private fun metric(label: String, average: Double, values: List<DailyCheckIn>, selector: (DailyCheckIn) -> Int) =
-        InsightMetric(label, String.format(Locale.US, "%.1f / 5", average), values.asReversed().map { selector(it) / 5f })
+        InsightMetric(label, String.format(Locale.US, "%.1f / 5", average), buildSevenDayPoints(values, selector = selector))
     fun onEvent(event: InsightsUiEvent) { if (event == InsightsUiEvent.Retry) load() }
     fun close() = scope.cancel()
+}
+
+internal fun buildSevenDayPoints(
+    checkIns: List<DailyCheckIn>,
+    today: LocalDate = LocalDate.now(),
+    selector: (DailyCheckIn) -> Int
+): List<DailyMetricPoint> {
+    val latestByDate = checkIns.groupBy(DailyCheckIn::date).mapValues { (_, entries) -> entries.maxBy { it.timestamp } }
+    return (6L downTo 0L).map { daysAgo ->
+        val date = today.minusDays(daysAgo)
+        DailyMetricPoint(
+            dayLabel = date.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.US),
+            value = latestByDate[date]?.let { selector(it).coerceIn(1, 5) / 5f }
+        )
+    }
 }
 class InsightsViewModel(private val holder: InsightsStateHolder) : ViewModel() {
     val uiState = holder.state
