@@ -421,4 +421,13 @@ Inner Garden currently includes anonymous entry, cloud-backed daily check-ins, d
 </p>
 
 ---
+Please check out the below links for more details :
+
+📌 [Technical Documentation](https://docs.google.com/document/d/1_I2wskrUs0bEiScz3LzzyVgRNT7h7mibtkozjweN_6M/edit?tab=t.0)
+
+✍️ [Medium Blog](https://medium.com/@realmoumita.das/inner-garden-d41dffe0016d?sharedUserId=realmoumita.das)
+
+[ ▶︎ ] [App Walkthrough and Demo](https://www.youtube.com/watch?v=-bhrRZng-kc&feature=youtu.be)
+
+---
 <sub><i>Inner Garden – Google Patchamomma 2026</i></sub>
